@@ -1,0 +1,54 @@
+#import: MDIconButton kivy.uix.button
+<SelectableLabel>:
+    # Draw a background to indicate selection
+    canvas.before:
+        Color:
+            rgba: 0.3, 0.3, 0.3, 1
+        Rectangle:
+            pos: self.pos
+            size: self.size
+        Color:
+            rgba: 0.2, 0.2, 0.2, 1
+        Rectangle:
+            pos: self.pos[0], self.pos[1]+2
+            size: self.size[0], self.size[1]-2
+
+<RV>:
+    viewclass: 'SelectableLabel'
+    SelectableRecycleBoxLayout:
+        id: selectbox
+        default_size: None, dp(56)
+        default_size_hint: 1, None
+        size_hint_y: None
+        height: self.minimum_height
+        orientation: 'vertical'
+        multiselect: False
+        touch_multiselect: False
+
+<LabelBox>:
+    canvas.before:
+        Color:
+            rgba: 0.10, 0.10, 0.10, 1
+        Rectangle:
+            pos: self.pos[0], self.pos[1]
+            size: self.size[0], self.size[1]
+    MDIconButton:
+        id: back_button
+        icon: 'arrow-left'
+        theme_text_color: 'Custom'
+        text_color: 0.9,0.9,0.9,1
+        on_press: root.on_back()
+    Label:
+        id: label
+        text: ""
+
+<DateWidget>:
+    LabelBox:
+        id: heading
+        pos_hint: {'x': 0, "top": 1}
+        size_hint: 1, 0.1
+        text: "hello"
+    RV:
+        id: date
+        pos_hint: {'x': 0, "top": 1}
+

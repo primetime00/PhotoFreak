@@ -1,0 +1,28 @@
+#: import ImageWidget ui.imageWidget
+#: import DateWidget ui.dateWidget
+
+<Separator@Widget>:
+    canvas:
+        Color:
+            rgba: 0.1, 0.1, 0.1, 1
+        Rectangle:
+            pos: self.pos
+            size: self.size
+
+<HSeparator@Separator>:
+    size_hint_y: None
+    height: dp(2)
+
+<VSeparator@Separator>:
+    size_hint_x: None
+    width: dp(2)
+
+<MainScreen>:
+    DateWidget:
+        size_hint: 0.2,1
+        id: dateWidget
+        onYearFunc: root.onYear
+    VSeparator:
+    ImageWidget:
+        id: imageWidget
+

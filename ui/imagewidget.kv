@@ -1,0 +1,51 @@
+#:import Matrix kivy.graphics.transformation.Matrix
+<ImageWidget>:
+    id: main_image
+    orientation: 'vertical'
+    canvas.before:
+        Color:
+            rgba: 0.2,0.2,0.2, 1
+        Rectangle:
+            pos: self.pos[0], self.pos[1]
+            size: self.size[0], self.size[1]
+    Scatter:
+        id: scatter
+        do_scale: 0
+        do_rotation: 0
+        do_translation: 0
+        Image:
+            id: image
+            size: scatter.size
+            source: "E:\\Pictures\\max-horse.jpg"
+            allow_stretch: True
+            canvas.before:
+                PushMatrix
+                Scale:
+                    xyz: -1,1,1
+                    origin: self.center
+
+                Rotate:
+                    angle:  root.imageAngle
+                    origin: self.center
+            canvas.after:
+                PopMatrix
+    BoxLayout:
+        size_hint: 1, 0.05
+        canvas.before:
+            Color:
+                rgba: 0.1,0.1,0.1, 1
+            Rectangle:
+                pos: self.pos[0], self.pos[1]
+                size: self.size[0], self.size[1]
+            Color:
+                rgba: 0.3, 0.3, 0.3, 1
+            Rectangle:
+                pos: self.pos[0]+2, self.pos[1]+2
+                size: self.size[0]-4, self.size[1]-4
+
+        Label:
+            size_hint:0.2, 1
+            text: root.imageNumber
+        Label:
+            text: root.imageName
+
