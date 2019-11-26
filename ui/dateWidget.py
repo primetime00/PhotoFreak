@@ -14,7 +14,14 @@ from ui.utils import KVLoader
 
 class SelectableRecycleBoxLayout(FocusBehavior, LayoutSelectionBehavior, RecycleBoxLayout):
 
-    pass
+    def select_with_touch(self, node, touch=None):
+        view = self.recycleview.view_adapter.get_visible_view(node)
+        rv = self.parent
+        dw = rv.parent
+        if dw._applyUpdate(view):
+            return super().select_with_touch(node, touch)
+        return False
+
 
 class LabelBox(BoxLayout):
     text = StringProperty("")
@@ -34,6 +41,7 @@ class SelectableLabel(RecycleDataViewBehavior, Label):
     data = StringProperty()
     selected = BooleanProperty(False)
     selectable = BooleanProperty(True)
+    markup = True
 
     def unSelect(self):
         self.selected = False
@@ -51,7 +59,8 @@ class SelectableLabel(RecycleDataViewBehavior, Label):
         return super(SelectableLabel, self).refresh_view_attrs(
             rv, index, data)
 
-
+    def refresh_view_layout(self, rv, index, layout, viewport):
+        super().refresh_view_layout(rv, index, layout, viewport)
 
     def on_touch_down(self, touch):
         ''' Add selection on touch down '''
@@ -61,14 +70,17 @@ class SelectableLabel(RecycleDataViewBehavior, Label):
             return self.parent.select_with_touch(self.index, touch)
 
     def apply_selection(self, rv, index, is_selected):
-        ''' Respond to the selection of items in the view. '''
-        if isinstance(rv.parent, DateWidget):
-            rv.parent.checkItem(self, is_selected)
-        if self.parent is not None and rv is not None and rv.parent is not None:
-            for c in rv.ids.selectbox.children:
-                if isinstance(c, SelectableLabel):
-                    c.unSelect()
-            rv.parent.onItemSelected(self.data, self, index)
+        if is_selected:
+            self.text = "[color=#00aaffff][u]"+self.data+"[/u][/color]"
+        else:
+            self.text = self.data
+        # if isinstance(rv.parent, DateWidget):
+        #     rv.parent.checkItem(self, is_selected)
+        # if self.parent is not None and rv is not None and rv.parent is not None:
+        #     for c in rv.ids.selectbox.children:
+        #         if isinstance(c, SelectableLabel):
+        #             c.unSelect()
+        #     rv.parent.onItemSelected(self.data, self, index)
 
 
 class RV(RecycleView):
@@ -142,6 +154,18 @@ class DateWidget(BoxLayout, KVLoader):
                 self.onMonthFunc(self, self.currentYear, self.currentMonth)
 
 
+    def _applyUpdate(self, view):
+        text = view.data
+        if self.mode == self.YEAR:
+            self.currentYear = -1 if not text.isdigit() else int(text)
+            self.mode = self.MONTH if self.currentYear != -1 else self.YEAR
+            self.postMessage(App.get_running_app().REQUEST_MONTHS, self, self.currentYear)
+            return False
+        else:
+            self.currentMonth = text
+            self.postMessage(App.get_running_app().SUBMIT_DATE, self, self.currentYear, self.currentMonth)
+        return True
+
 
     def changeToMonth(self):
         self.mode = self.MONTH
@@ -151,9 +175,7 @@ class DateWidget(BoxLayout, KVLoader):
         self.ids.date.refresh_from_data()
 
     def on_back(self):
-        for c in self.ids.date.ids.selectbox.children:
-            if isinstance(c, SelectableLabel):
-                c.unSelect()
+        self.ids.date.ids.selectbox.clear_selection()
         self.changeToYear()
 
     def changeToYear(self):

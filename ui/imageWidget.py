@@ -20,6 +20,7 @@ class ImageWidget(BoxLayout):
     coreImage = None
     currentPos = 0
     imageAngle = NumericProperty(0)
+    imageScale = NumericProperty(1)
     imageNumber = StringProperty("")
     imageName = StringProperty("")
     imageLoader = ImageLoader(threads=4)
@@ -105,10 +106,14 @@ class ImageWidget(BoxLayout):
             if imData['hflip']:
                 self.ids.image.texture.flip_horizontal()
             self.imageAngle = imData['angle']
+            if self.imageAngle % 180 != 0:
+                self.imageScale = self.height / self.width
+            else:
+                self.imageScale = 1
 
     def get_texture(self, data):
         bt = data['image']
-        full = PillowImage.open(io.BytesIO(bt))
+        full: PillowImage = PillowImage.open(io.BytesIO(bt))
         exif_data = full._getexif()
         angle = 0
         vFlip = True
@@ -117,24 +122,24 @@ class ImageWidget(BoxLayout):
         rotation = 1
         if exif_data is not None and 274 in exif_data:
             rotation = exif_data[274]
+        if rotation == 1:
+            full = full.transpose(PillowImage.FLIP_LEFT_RIGHT)
+        if rotation == 2:
+            full = full.transpose(PillowImage.FLIP_LEFT_RIGHT)
+        elif rotation == 3:
+            full = full.transpose(PillowImage.ROTATE_180)
+        elif rotation == 4:
+            pass
+        elif rotation == 5:
+            full = full.transpose(PillowImage.FLIP_LEFT_RIGHT).transpose(PillowImage.ROTATE_270) #swap 90 and 270
+        elif rotation == 6:
+            full = full.transpose(PillowImage.FLIP_LEFT_RIGHT).transpose(PillowImage.ROTATE_90) #here too
+        elif rotation == 7:
+            full = full.transpose(PillowImage.ROTATE_90)
+        elif rotation == 8:
+            full = full.transpose(PillowImage.FLIP_LEFT_RIGHT).transpose(PillowImage.ROTATE_270)
         coreImage = CoreImageData(full.size[0], full.size[1], full.mode.lower(), full.tobytes())
         texture = Texture.create_from_data(coreImage)
-        if rotation == 2:
-            hFlip = True
-        elif rotation == 3:
-            angle = 180
-        elif rotation == 4:
-            vFlip = False
-        elif rotation == 5:
-            hFlip = True
-            angle = -270
-        elif rotation == 6:
-            angle = 90
-        elif rotation == 7:
-            hFlip = True
-            angle = -90
-        elif rotation == 8:
-            angle = -270
         data['angle'] = angle
         data['vflip'] = vFlip
         data['hflip'] = not hFlip
